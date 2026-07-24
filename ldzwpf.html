@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>老冀小区楼栋杂物卫生评分系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            position: relative;
+        }
+        header {
+            background: linear-gradient(90deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px 35px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.92;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+            position: relative;
+        }
+        .content {
+            padding: 35px;
+        }
+        .rating-section {
+            margin-bottom: 35px;
+            position: relative;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+        }
+        .section-title i {
+            margin-right: 15px;
+            color: #3498db;
+            font-size: 1.8rem;
+        }
+        .rating-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .rating-btn {
+            padding: 20px 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+            color: white;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .rating-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.1));
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: -1;
+        }
+        .rating-btn:hover::after {
+            opacity: 1;
+        }
+        .rating-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .rating-btn.you { background: linear-gradient(145deg, #27ae60, #2ecc71); }
+        .rating-btn.liang { background: linear-gradient(145deg, #3498db, #2980b9); }
+        .rating-btn.yiban { background: linear-gradient(145deg, #f39c12, #e67e22); }
+        .rating-btn.jiaocha { background: linear-gradient(145deg, #e74c3c, #c0392b); }
+        .rating-btn.techai { background: linear-gradient(145deg, #7f8c8d, #34495e); }
+        .rating-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 4px rgba(255,255,255,0.8), 0 12px 30px rgba(0,0,0,0.25);
+        }
+        .score-display {
+            background: #f8f9fa;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.06);
+            border: 1px solid #eef2f7;
+            position: relative;
+        }
+        .score-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+        }
+        .score-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .score-label {
+            font-size: 1.1rem;
+            color: #5a6872;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+        .score-label i {
+            margin-right: 12px;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e3f2fd;
+            border-radius: 50%;
+            font-size: 1.1rem;
+            color: #3498db;
+        }
+        .score-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .adjust-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: #3498db;
+            color: white;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .adjust-btn.minus {
+            background: #e74c3c;
+        }
+        .adjust-btn.plus {
+            background: #2ecc71;
+        }
+        .adjust-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        .adjust-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.6;
+        }
+        .score-value {
+            height: 80px;
+            min-width: 120px;
+            border-radius: 12px;
+            background: white;
+            border: 2px solid #e0e7ee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+            padding: 0 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .score-value-container {
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f1f8ff;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #3498db;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+            opacity: 0.8;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .copy-btn:hover {
+            background: #3498db;
+            color: white;
+            opacity: 1;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.15);
+        }
+        .total-score .score-label {
+            color: #3498db;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+        .total-score .score-value {
+            border-color: #3498db;
+            background: linear-gradient(to right, rgba(52, 152, 219, 0.08), rgba(41, 128, 185, 0.06));
+            font-size: 2.2rem;
+            color: #2980b9;
+            font-weight: 700;
+            min-width: 180px;
+        }
+        .score-info {
+            font-size: 0.95rem;
+            color: #7f8c8d;
+            margin-top: 12px;
+            line-height: 1.6;
+        }
+        .score-deduction {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .instructions {
+            background: linear-gradient(to right, #e3f2fd, #d1e7ff);
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 35px;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #2c3e50;
+            border: 1px solid #bbdefb;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .instructions h3 {
+            margin-bottom: 18px;
+            color: #2980b9;
+            display: flex;
+            align-items: center;
+            font-size: 1.4rem;
+        }
+        .instructions h3 i {
+            margin-right: 12px;
+        }
+        .instructions ul {
+            padding-left: 30px;
+        }
+        .instructions li {
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .instructions li:before {
+            content: "•";
+            color: #3498db;
+            font-weight: bold;
+            display: inline-block; 
+            width: 1em;
+            margin-left: -1em;
+            font-size: 1.2rem;
+        }
+        .score-range {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.95rem;
+            color: #7f8c8d;
+        }
+        .footer {
+            text-align: center;
+            padding: 25px;
+            color: #7f8c8d;
+            font-size: 0.95rem;
+            border-top: 1px solid #ecf0f1;
+            background: #f9fbfd;
+        }
+        .deduction-details {
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #95a5a6;
+            font-weight: 500;
+        }
+        .total-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+        .current-level {
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 8px 15px;
+            border-radius: 30px;
+            background: #e3f2fd;
+            color: #2980b9;
+        }
+        .notification {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            padding: 18px 30px;
+            background: #27ae60;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            transform: translateX(200%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification i {
+            margin-right: 12px;
+            font-size: 1.5rem;
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .container {
+                border-radius: 15px;
+            }
+            header {
+                padding: 25px 20px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .subtitle {
+                font-size: 1rem;
+            }
+            .content {
+                padding: 25px 20px;
+            }
+            .rating-buttons {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .rating-btn {
+                padding: 22px 10px;
+                font-size: 1.1rem;
+            }
+            .score-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .score-display {
+                padding: 25px 20px;
+            }
+            .score-control {
+                gap: 10px;
+            }
+            .adjust-btn {
+                width: 44px;
+                height: 44px;
+                font-size: 1.6rem;
+            }
+            .score-value {
+                height: 70px;
+                min-width: 100px;
+                font-size: 1.6rem;
+            }
+            .total-score .score-value {
+                font-size: 1.8rem;
+            }
+            .section-title {
+                font-size: 1.3rem;
+            }
+            .instructions {
+                padding: 20px;
+            }
+            .copy-btn {
+                width: 38px;
+                height: 38px;
+                font-size: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .adjust-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
+            }
+            .score-value {
+                height: 65px;
+                font-size: 1.5rem;
+                min-width: 90px;
+            }
+            .copy-btn {
+                width: 35px;
+                height: 35px;
+                right: 10px;
+            }
+            .score-label {
+                font-size: 1rem;
+            }
+            .score-label i {
+                width: 30px;
+                height: 30px;
+                font-size: 1rem;
+            }
+            .total-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+        
+        .floating-total {
+            position: sticky;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(145deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 90%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            z-index: 100;
+        }
+        .floating-total .copy-btn {
+            position: static;
+            transform: none;
+            background: rgba(255,255,255,0.2);
+            width: 36px;
+            height: 36px;
+        }
+        .floating-total .copy-btn:hover {
+            background: white;
+            color: #3498db;
+        }
+        
+        .emoji-btn {
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>老冀小区楼栋杂物评分系统</h1>
+            <div class="subtitle">点击评分等级自动生成分数，或使用加减按钮手动调整各项分数</div>
+        </header>
+        
+        <div class="content">
+            <div class="rating-section">
+                <h2 class="section-title">
+                    <i class="fas fa-star"></i> 选择评分等级
+                </h2>
+                <div class="rating-buttons">
+                    <button class="rating-btn you" data-rating="you">优 (90-94分)</button>
+                    <button class="rating-btn liang" data-rating="liang">良 (85-89分)</button>
+                    <button class="rating-btn yiban" data-rating="yiban">一般 (80-84分)</button>
+                    <button class="rating-btn jiaocha" data-rating="jiaocha">较差 (75-79分)</button>
+                    <button class="rating-btn techai" data-rating="techai">特差 (70-74分)</button>
+                </div>
+            </div>
+            
+            <div class="score-section">
+                <h2 class="section-title">
+                    <i class="fas fa-clipboard-list"></i> 评分详情
+                </h2>
+                <div class="score-display">
+                    <div class="score-grid">
+                        <!-- 总分放在第一个位置 -->
+                        <div class="score-item total-score">
+                            <div class="score-label">
+                                <i class="fas fa-trophy"></i> 总分
+                            </div>
+                            <div class="score-value-container">
+                                <div class="score-value" id="total-score">--</div>
+                                <button class="copy-btn" id="copy-total" title="复制总分">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                            </div>
+                            <div class="total-info">
+                                <div class="score-range">满分: 100分</div>
+                                <div class="current-level">当前等级: <span id="current-level">未选择</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="score-item">
+                            <div class="score-label">
+                                <i class="fas fa-boxes"></i> 楼道杂物
+                            </div>
+                            <div class="score-control">
+                                <button class="adjust-btn minus emoji-btn" data-category="zawu" data-step="3">−</button>
+                                <div class="score-value" id="zawu-score">--</div>
+                                <button class="adjust-btn plus emoji-btn" data-category="zawu" data-step="3">+</button>
+                            </div>
+                            <div class="score-info">
+                                <span class="score-deduction">每次扣3分</span> | 范围: 19-40分
+                                <div class="deduction-details" id="zawu-details"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="score-item">
+                            <div class="score-label">
+                                <i class="fas fa-toolbox"></i> 管道井
+                            </div>
+                            <div class="score-control">
+                                <button class="adjust-btn minus emoji-btn" data-category="dianbiao" data-step="3">−</button>
+                                <div class="score-value" id="dianbiao-score">--</div>
+                                <button class="adjust-btn plus emoji-btn" data-category="dianbiao" data-step="3">+</button>
+                            </div>
+                            <div class="score-info">
+                                <span class="score-deduction">每次扣3分</span> | 范围: 11-20分
+                                <div class="deduction-details" id="dianbiao-details"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="score-item">
+                            <div class="score-label">
+                                <i class="fas fa-motorcycle"></i> 电动车
+                            </div>
+                            <div class="score-control">
+                                <button class="adjust-btn minus emoji-btn" data-category="bicycle" data-step="3">−</button>
+                                <div class="score-value" id="bicycle-score">--</div>
+                                <button class="adjust-btn plus emoji-btn" data-category="bicycle" data-step="3">+</button>
+                            </div>
+                            <div class="score-info">
+                                <span class="score-deduction">每次扣3分</span> | 范围: 11-20分
+                                <div class="deduction-details" id="bicycle-details"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="score-item">
+                            <div class="score-label">
+                                <i class="fas fa-couch"></i> 大件物品
+                            </div>
+                            <div class="score-control">
+                                <button class="adjust-btn minus emoji-btn" data-category="dajian" data-step="2">−</button>
+                                <div class="score-value" id="dajian-score">--</div>
+                                <button class="adjust-btn plus emoji-btn" data-category="dajian" data-step="2">+</button>
+                            </div>
+                            <div class="score-info">
+                                <span class="score-deduction">每次扣2分</span> | 范围: 4-10分
+                                <div class="deduction-details" id="dajian-details"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="score-item">
+                            <div class="score-label">
+                                <i class="fas fa-plug"></i> 飞线充电
+                            </div>
+                            <div class="score-control">
+                                <button class="adjust-btn minus emoji-btn" data-category="feixian" data-step="2">−</button>
+                                <div class="score-value" id="feixian-score">--</div>
+                                <button class="adjust-btn plus emoji-btn" data-category="feixian" data-step="2">+</button>
+                            </div>
+                            <div class="score-info">
+                                <span class="score-deduction">每次扣2分</span> | 范围: 4-10分
+                                <div class="deduction-details" id="feixian-details"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3><i class="fas fa-info-circle"></i> 使用说明</h3>
+                <ul>
+                    <li><strong>自动评分</strong>：点击上方五个评分等级按钮之一，系统会自动生成对应的总分和各分项分数</li>
+                    <li><strong>手动调整</strong>：使用每个评分项旁边的加减按钮微调分数（符合扣分规则）</li>
+                    <li><strong>扣分规则</strong>：
+                        <ul>
+                            <li><strong>楼道杂物、管道井、电动车</strong>：每次扣3分（分值 = 最大值 - 3 × 扣分次数）</li>
+                            <li><strong>大件物品、飞线充电</strong>：每次扣2分（分值 = 最大值 - 2 × 扣分次数）</li>
+                        </ul>
+                    </li>
+                    <li><strong>自动匹配等级</strong>：手动调整分数后，系统会自动匹配总分所在的评分等级</li>
+                    <li><strong>复制功能</strong>：点击总分旁边的复制按钮 <i class="far fa-copy"></i> 可以复制总分到剪贴板</li>
+					<li><strong>代码BUG</strong>：评分优可能出现低于90的总分，这个BUG老夫懒得改，凑合用吧</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="floating-total" id="floating-total">
+            <span>总分: <span id="floating-score">--</span></span>
+            <button class="copy-btn" id="copy-floating" title="复制总分">
+                <i class="far fa-copy"></i>
+            </button>
+        </div>
+        
+        <div class="footer">
+            <p>小区楼栋卫生杂物评分系统 &copy; 2025 | 支持自动评分和手动微调 ，代码来自：球野蓝不城的老冀</p>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notification-text">总分已复制到剪贴板！</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ratingButtons = document.querySelectorAll('.rating-btn');
+            const totalScoreEl = document.getElementById('total-score');
+            const floatingScoreEl = document.getElementById('floating-score');
+            const zawuScoreEl = document.getElementById('zawu-score');
+            const dianbiaoScoreEl = document.getElementById('dianbiao-score');
+            const bicycleScoreEl = document.getElementById('bicycle-score');
+            const dajianScoreEl = document.getElementById('dajian-score');
+            const feixianScoreEl = document.getElementById('feixian-score');
+            const copyTotalBtn = document.getElementById('copy-total');
+            const copyFloatingBtn = document.getElementById('copy-floating');
+            const notification = document.getElementById('notification');
+            const notificationText = document.getElementById('notification-text');
+            const currentLevelEl = document.getElementById('current-level');
+            const adjustButtons = document.querySelectorAll('.adjust-btn');
+            const floatingTotal = document.getElementById('floating-total');
+            
+            // 评分等级配置
+            const ratingConfig = {
+                'you': { min: 90, max: 94, color: '#27ae60', name: '优' },
+                'liang': { min: 85, max: 89, color: '#3498db', name: '良' },
+                'yiban': { min: 80, max: 84, color: '#f39c12', name: '一般' },
+                'jiaocha': { min: 75, max: 79, color: '#e74c3c', name: '较差' },
+                'techai': { min: 70, max: 74, color: '#7f8c8d', name: '特差' }
+            };
+            
+            // 各分项分数范围和扣分规则（使用新名称）
+            const scoreRanges = {
+                'zawu': { max: 40, min: 19, step: 3, details: 'zawu-details', name: '楼道杂物' },
+                'dianbiao': { max: 20, min: 11, step: 3, details: 'dianbiao-details', name: '管道井' },
+                'bicycle': { max: 20, min: 11, step: 3, details: 'bicycle-details', name: '电动车' },
+                'dajian': { max: 10, min: 4, step: 2, details: 'dajian-details', name: '大件物品' },
+                'feixian': { max: 10, min: 4, step: 2, details: 'feixian-details', name: '飞线充电' }
+            };
+            
+            // 当前分数状态
+            let currentScores = {
+                zawu: 0,
+                dianbiao: 0,
+                bicycle: 0,
+                dajian: 0,
+                feixian: 0
+            };
+            
+            // 当前评分等级
+            let currentRating = null;
+            
+            // 初始化
+            init();
+            
+            function init() {
+                // 为每个评分按钮添加点击事件
+                ratingButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const rating = this.dataset.rating;
+                        currentRating = rating;
+                        updateActiveButton(this);
+                        generateScores(rating);
+                    });
+                });
+                
+                // 为加减按钮添加点击事件
+                adjustButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const category = this.dataset.category;
+                        const step = parseInt(this.dataset.step);
+                        const isMinus = this.classList.contains('minus');
+                        
+                        adjustScore(category, isMinus ? -step : step);
+                        updateRatingLevel();
+                    });
+                });
+                
+                // 复制总分功能
+                copyTotalBtn.addEventListener('click', copyTotalScore);
+                copyFloatingBtn.addEventListener('click', copyTotalScore);
+                
+                // 默认选择"优"的评分
+                document.querySelector('.rating-btn.you').click();
+                
+                // 初始更新按钮状态
+                updateButtonStates();
+            }
+            
+            // 复制总分
+            function copyTotalScore() {
+                if (totalScoreEl.textContent !== '--') {
+                    navigator.clipboard.writeText(totalScoreEl.textContent)
+                        .then(() => {
+                            notificationText.textContent = '总分已复制到剪贴板！';
+                            showNotification();
+                        })
+                        .catch(err => {
+                            console.error('复制失败:', err);
+                        });
+                }
+            }
+            
+            // 显示通知
+            function showNotification() {
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 2000);
+            }
+            
+            // 更新活动按钮状态
+            function updateActiveButton(activeButton) {
+                ratingButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                activeButton.classList.add('active');
+            }
+            
+            // 调整分数
+            function adjustScore(category, adjustment) {
+                const range = scoreRanges[category];
+                let newScore = currentScores[category] + adjustment;
+                
+                // 确保分数在范围内
+                if (newScore < range.min) newScore = range.min;
+                if (newScore > range.max) newScore = range.max;
+                
+                // 确保分数符合步长规则
+                const difference = range.max - newScore;
+                if (difference % range.step !== 0) {
+                    // 找到最接近的合法分数
+                    const remainder = difference % range.step;
+                    if (remainder > range.step / 2) {
+                        newScore = range.max - (difference - remainder + range.step);
+                    } else {
+                        newScore = range.max - (difference - remainder);
+                    }
+                    
+                    // 确保在范围内
+                    if (newScore < range.min) newScore = range.min;
+                    if (newScore > range.max) newScore = range.max;
+                    
+                    notificationText.textContent = `分数已调整为${newScore}分（符合${range.step}分步长规则）`;
+                    showNotification();
+                }
+                
+                // 更新分数
+                currentScores[category] = newScore;
+                updateScoreDisplay(category);
+                updateTotalScore();
+                updateDeductionDetails(category);
+                updateButtonStates();
+            }
+            
+            // 更新分数显示
+            function updateScoreDisplay(category) {
+                document.getElementById(`${category}-score`).textContent = currentScores[category];
+            }
+            
+            // 更新总分
+            function updateTotalScore() {
+                const totalScore = Object.values(currentScores).reduce((sum, score) => sum + score, 0);
+                totalScoreEl.textContent = totalScore;
+                floatingScoreEl.textContent = totalScore;
+            }
+            
+            // 更新评分等级
+            function updateRatingLevel() {
+                const totalScore = parseInt(totalScoreEl.textContent);
+                let matchedLevel = null;
+                let matchedRating = null;
+                
+                // 检查总分是否在某个等级范围内
+                for (const rating in ratingConfig) {
+                    const config = ratingConfig[rating];
+                    if (totalScore >= config.min && totalScore <= config.max) {
+                        matchedLevel = config;
+                        matchedRating = rating;
+                        break;
+                    }
+                }
+                
+                if (matchedLevel) {
+                    currentLevelEl.textContent = matchedLevel.name;
+                    currentLevelEl.style.color = matchedLevel.color;
+                    
+                    // 高亮对应的等级按钮
+                    ratingButtons.forEach(btn => {
+                        if (btn.dataset.rating === matchedRating) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                } else {
+                    currentLevelEl.textContent = '无匹配等级';
+                    currentLevelEl.style.color = '#e74c3c';
+                    
+                    // 移除所有按钮高亮
+                    ratingButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                }
+            }
+            
+            // 更新扣分详情
+            function updateDeductionDetails(category) {
+                const range = scoreRanges[category];
+                const deductions = (range.max - currentScores[category]) / range.step;
+                const deductionText = document.getElementById(range.details);
+                
+                if (deductions > 0) {
+                    deductionText.textContent = `扣分点：${deductions}处（共扣${deductions * range.step}分）`;
+                } else {
+                    deductionText.textContent = "无扣分点";
+                }
+            }
+            
+            // 更新按钮状态
+            function updateButtonStates() {
+                for (const category in scoreRanges) {
+                    const range = scoreRanges[category];
+                    const minusBtn = document.querySelector(`.adjust-btn.minus[data-category="${category}"]`);
+                    const plusBtn = document.querySelector(`.adjust-btn.plus[data-category="${category}"]`);
+                    
+                    // 检查分数是否在范围内
+                    const canDecrease = currentScores[category] > range.min;
+                    const canIncrease = currentScores[category] < range.max;
+                    
+                    // 更新按钮状态
+                    minusBtn.disabled = !canDecrease;
+                    plusBtn.disabled = !canIncrease;
+                }
+            }
+            
+            // 生成符合等级范围和扣分规则的分数
+            function generateScores(rating) {
+                const config = ratingConfig[rating];
+                currentLevelEl.textContent = config.name;
+                currentLevelEl.style.color = config.color;
+                
+                // 生成分项分数
+                let totalScore;
+                let attempts = 0;
+                
+                // 确保总分在所选等级范围内
+                do {
+                    // 生成每个分项分数（符合扣分规则）
+                    for (const category in scoreRanges) {
+                        const range = scoreRanges[category];
+                        
+                        // 计算最大扣分次数
+                        const maxDeductions = Math.floor((range.max - range.min) / range.step);
+                        
+                        // 随机生成扣分次数
+                        const deductions = Math.floor(Math.random() * (maxDeductions + 1));
+                        
+                        // 计算分数：最大值 - 扣分次数 × 扣分步长
+                        currentScores[category] = range.max - (deductions * range.step);
+                        
+                        // 更新扣分详情
+                        updateDeductionDetails(category);
+                    }
+                    
+                    // 计算总分
+                    totalScore = Object.values(currentScores).reduce((sum, score) => sum + score, 0);
+                    
+                    attempts++;
+                    
+                    // 避免无限循环
+                    if (attempts > 100) break;
+                    
+                } while (totalScore < config.min || totalScore > config.max);
+                
+                // 显示分数
+                for (const category in currentScores) {
+                    updateScoreDisplay(category);
+                }
+                updateTotalScore();
+                updateButtonStates();
+                updateRatingLevel();
+            }
+            
+            // 监听滚动显示浮动总分
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 200) {
+                    floatingTotal.style.display = 'flex';
+                } else {
+                    floatingTotal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
